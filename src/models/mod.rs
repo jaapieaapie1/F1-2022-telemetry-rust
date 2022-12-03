@@ -2,7 +2,7 @@ mod header;
 mod motion;
 mod vector3d;
 mod session;
-mod enums;
+pub mod enums;
 mod lap_data;
 mod event;
 mod participant;
@@ -14,7 +14,7 @@ mod final_classification;
 mod lobby_info;
 mod car_damage;
 mod session_history;
-mod types;
+pub mod types;
 pub mod traits;
 
 pub use header::*;
