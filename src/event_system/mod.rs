@@ -2,7 +2,7 @@ pub trait Receiver {
     type Data;
     type Transformer;
 
-    fn on_emit(self, data: &Self::Data);
+    fn on_emit(&self, data: &Self::Data);
 }
 
 pub trait Signal {
@@ -10,7 +10,7 @@ pub trait Signal {
     type RecType: Receiver;
 
     fn emit(&self, data: Self::Data);
-    fn connect(&mut self, trns: <Self::RecType as Receiver>::Transformer) -> Self::RecType;
+    fn connect(&mut self, trns: <Self::RecType as Receiver>::Transformer);
     fn disconnect(&mut self, i: usize);
 }
 
@@ -21,14 +21,13 @@ macro_rules! signal {
             recs: Vec<$rectype>
         }
 
-        #[derive(Copy,Clone)]
         pub struct $rectype {
             id: usize,
-            sig: fn(&$data)
+            sig: Box<dyn Fn(&$data)>
         }
 
         impl $rectype {
-            fn new(id: usize, cls: fn(&$data)) -> Self {
+            fn new(id: usize, cls: Box<dyn Fn(&$data)>) -> Self {
                 Self {
                     id, sig: cls
                 }
@@ -51,9 +50,9 @@ macro_rules! signal {
 
         impl Receiver for $rectype {
             type Data = $data;
-            type Transformer = fn(&$data);
+            type Transformer = Box<dyn Fn(&$data)>;
 
-            fn on_emit(self, data: &Self::Data) {
+            fn on_emit(&self, data: &Self::Data) {
                 (self.sig)(data)
             }
         }
@@ -66,11 +65,10 @@ macro_rules! signal {
                 self.recs.iter().for_each(|rec| rec.on_emit(&data))
             }
 
-            fn connect(&mut self, trns: <Self::RecType as Receiver>::Transformer) -> Self::RecType {
+            fn connect(&mut self, trns: <Self::RecType as Receiver>::Transformer) {
                 let i: usize = self.nxt();
                 let r = Self::RecType::new(i, trns);
                 self.recs.push(r);
-                r
             }
 
             fn disconnect(&mut self, i: usize) {
@@ -91,9 +89,9 @@ macro_rules! signal_fns {
             }
         }
 
-        fn listen(callable: fn(&Self)) {
+        fn listen<F>(callable: F) where F: Fn(&Self) -> () + 'static {
             unsafe {
-                SIGNAL.connect(callable);
+                SIGNAL.connect(Box::new(callable));
             }
         }
     };
