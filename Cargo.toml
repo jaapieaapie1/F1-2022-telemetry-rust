@@ -2,7 +2,7 @@
 name = "f1-2022-udp-server"
 description = "A UDP server library for F1 2022"
 license = "MIT"
-version = "0.1.3"
+version = "0.1.4"
 edition = "2021"
 homepage = "https://github.com/jaapieaapie1/F1-2022-telemetry-rust"
 exclude = [".idea/", "target/"]
