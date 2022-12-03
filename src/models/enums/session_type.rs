@@ -15,5 +15,6 @@ pub enum SessionType {
     OSQ = 9,
     R = 10,
     R2 = 11,
-    TimeTrial = 12,
+    R3 = 12,
+    TimeTrial = 13,
 }

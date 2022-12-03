@@ -38,31 +38,56 @@ pub struct LapData {
 
 impl LapData {
     pub fn new<R: Read>(reader: &mut R) -> Result<LapData, std::io::Error> {
+        let last_lap_time = reader.read_u32::<LittleEndian>()?;
+        let current_lap_time = reader.read_u32::<LittleEndian>()?;
+        let sector1_time = reader.read_u16::<LittleEndian>()?;
+        let sector2_time = reader.read_u16::<LittleEndian>()?;
+        let lap_distance = reader.read_f32::<LittleEndian>()?;
+        let total_distance = reader.read_f32::<LittleEndian>()?;
+        let safety_car_delta = reader.read_f32::<LittleEndian>()?;
+        let car_position = reader.read_u8()?;
+        let current_lap_num = reader.read_u8()?;
+        let pit_status = PitStatus::from_u8(reader.read_u8()?).unwrap();
+        let num_pit_stops = reader.read_u8()?;
+        let sector = Sector::from_u8(reader.read_u8()?).unwrap();
+        let current_lap_invalid = reader.read_u8()? != 0;
+        let penalties = reader.read_u8()?;
+        let warnings = reader.read_u8()?;
+        let num_unserved_drive_through_penalties = reader.read_u8()?;
+        let num_unserved_stop_go_penalties = reader.read_u8()?;
+        let grid_position = reader.read_u8()?;
+        let driver_status = DriverStatus::from_u8(reader.read_u8()?).unwrap();
+        let result_status = ResultStatus::from_u8(reader.read_u8()?).unwrap();
+        let pit_lane_timer_active = reader.read_u8()? != 0;
+        let pit_lane_time_in_lane = reader.read_u16::<LittleEndian>()?;
+        let pit_stop_timer = reader.read_u16::<LittleEndian>()?;
+        let pit_stop_should_serve_penalty = reader.read_u8()? != 0;
+        
         Ok(LapData {
-            last_lap_time: reader.read_u32::<LittleEndian>()?,
-            current_lap_time: reader.read_u32::<LittleEndian>()?,
-            sector1_time: reader.read_u16::<LittleEndian>()?,
-            sector2_time: reader.read_u16::<LittleEndian>()?,
-            lap_distance: reader.read_f32::<LittleEndian>()?,
-            total_distance: reader.read_f32::<LittleEndian>()?,
-            safety_car_delta: reader.read_f32::<LittleEndian>()?,
-            car_position: reader.read_u8()?,
-            current_lap_num: reader.read_u8()?,
-            pit_status: PitStatus::from_u8(reader.read_u8()?).unwrap(),
-            num_pit_stops: reader.read_u8()?,
-            sector: Sector::from_u8(reader.read_u8()?).unwrap(),
-            current_lap_invalid: reader.read_u8()? != 0,
-            penalties: reader.read_u8()?,
-            warnings: reader.read_u8()?,
-            num_unserved_drive_through_penalties: reader.read_u8()?,
-            num_unserved_stop_go_penalties: reader.read_u8()?,
-            grid_position: reader.read_u8()?,
-            driver_status: DriverStatus::from_u8(reader.read_u8()?).unwrap(),
-            result_status: ResultStatus::from_u8(reader.read_u8()?).unwrap(),
-            pit_lane_timer_active: reader.read_u8()? != 0,
-            pit_lane_time_in_lane: reader.read_u16::<LittleEndian>()?,
-            pit_stop_timer: reader.read_u16::<LittleEndian>()?,
-            pit_stop_should_serve_penalty: reader.read_u8()? != 0,
+            last_lap_time,
+            current_lap_time,
+            sector1_time,
+            sector2_time,
+            lap_distance,
+            total_distance,
+            safety_car_delta,
+            car_position,
+            current_lap_num,
+            pit_status,
+            num_pit_stops,
+            sector,
+            current_lap_invalid,
+            penalties,
+            warnings,
+            num_unserved_drive_through_penalties,
+            num_unserved_stop_go_penalties,
+            grid_position,
+            driver_status,
+            result_status,
+            pit_lane_timer_active,
+            pit_lane_time_in_lane,
+            pit_stop_timer,
+            pit_stop_should_serve_penalty,
         })
     }
 }
@@ -82,15 +107,18 @@ impl Packet for PacketLapData {
     const PACKET_SIZE: usize = 972;
 
     fn new<R: Read>(reader: &mut R) -> Result<PacketLapData, std::io::Error> {
+        let header = PacketHeader::new(reader)?;
         let mut lap_data = vec![];
         for _ in 0..22 {
             lap_data.push(LapData::new(reader)?);
         }
+        let time_trial_pb_car_idx = reader.read_u8()?;
+        let time_trial_rival_car_idx = reader.read_u8()?;
         Ok(PacketLapData {
-            header: PacketHeader::new(reader)?,
+            header,
             lap_data,
-            time_trial_pb_car_idx: reader.read_u8()?,
-            time_trial_rival_car_idx: reader.read_u8()?,
+            time_trial_pb_car_idx,
+            time_trial_rival_car_idx,
         })
     }
 

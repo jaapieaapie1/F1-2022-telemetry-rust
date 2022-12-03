@@ -17,6 +17,7 @@ pub enum ActualTyreCompound {
     F2Medium = 13,
     F2Hard = 14,
     F2Wet = 15,
+    Unknown = 0,
 }
 
 #[derive(FromPrimitive, Copy, Clone, Debug, Serialize)]
@@ -33,4 +34,5 @@ pub enum VisualTyreCompound {
     F2Soft = 20,
     F2Medium = 21,
     F2Hard = 22,
+    Unknown = 0,
 }

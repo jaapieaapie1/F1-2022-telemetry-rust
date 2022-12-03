@@ -8,4 +8,5 @@ pub enum MdfPanel {
     Damage = 2,
     Engine = 3,
     Temperatures = 4,
+    Unknown = 255,
 }

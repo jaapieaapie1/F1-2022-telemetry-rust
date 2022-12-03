@@ -30,23 +30,40 @@ pub struct CarTelemetryData {
 
 impl CarTelemetryData {
     pub fn new<R: Read>(reader: &mut R) -> Result<CarTelemetryData, std::io::Error> {
+        let speed = reader.read_u16::<LittleEndian>()?;
+        let throttle = reader.read_f32::<LittleEndian>()?;
+        let steer = reader.read_f32::<LittleEndian>()?;
+        let brake = reader.read_f32::<LittleEndian>()?;
+        let clutch = reader.read_u8()?;
+        let gear = reader.read_i8()?;
+        let engine_rpm = reader.read_u16::<LittleEndian>()?;
+        let drs = reader.read_u8()? != 0;
+        let rev_lights_percent = reader.read_u8()?;
+        let rev_lights_bitfield = reader.read_u16::<LittleEndian>()?;
+        let brakes_temperature = WheelsVector::<u16>::read_from(reader)?;
+        let tyres_surface_temperature = WheelsVector::<u8>::read_from(reader)?;
+        let tyres_inner_temperature = WheelsVector::<u8>::read_from(reader)?;
+        let engine_temperature = reader.read_u16::<LittleEndian>()?;
+        let tyres_pressure = WheelsVector::<f32>::read_from(reader)?;
+        let surface_type = WheelsVector::<SurfaceType>::read_from(reader)?;
+
         Ok(CarTelemetryData {
-            speed: reader.read_u16::<LittleEndian>()?,
-            throttle: reader.read_f32::<LittleEndian>()?,
-            steer: reader.read_f32::<LittleEndian>()?,
-            brake: reader.read_f32::<LittleEndian>()?,
-            clutch: reader.read_u8()?,
-            gear: reader.read_i8()?,
-            engine_rpm: reader.read_u16::<LittleEndian>()?,
-            drs: reader.read_u8()? != 0,
-            rev_lights_percent: reader.read_u8()?,
-            rev_lights_bitfield: reader.read_u16::<LittleEndian>()?,
-            brakes_temperature: WheelsVector::<u16>::read_from(reader)?,
-            tyres_surface_temperature: WheelsVector::<u8>::read_from(reader)?,
-            tyres_inner_temperature: WheelsVector::<u8>::read_from(reader)?,
-            engine_temperature: reader.read_u16::<LittleEndian>()?,
-            tyres_pressure: WheelsVector::<f32>::read_from(reader)?,
-            surface_type: WheelsVector::<SurfaceType>::read_from(reader)?,
+            speed,
+            throttle,
+            steer,
+            brake,
+            clutch,
+            gear,
+            engine_rpm,
+            drs,
+            rev_lights_percent,
+            rev_lights_bitfield,
+            brakes_temperature,
+            tyres_surface_temperature,
+            tyres_inner_temperature,
+            engine_temperature,
+            tyres_pressure,
+            surface_type,
         })
     }
 }
@@ -73,6 +90,7 @@ impl Packet for CarTelemetryPacket {
             car_telemetry_data.push(CarTelemetryData::new(reader)?);
         }
         let mdf_panel_index = MdfPanel::from_u8(reader.read_u8()?).unwrap();
+
         let mdf_panel_index_secondary_player = MdfPanel::from_u8(reader.read_u8()?).unwrap();
         let suggested_gear = reader.read_i8()?;
         Ok(CarTelemetryPacket {

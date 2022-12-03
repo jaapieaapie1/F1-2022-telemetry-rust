@@ -11,4 +11,5 @@ pub enum ResultStatus {
     Disqualified = 5,
     NotClassified = 6,
     Retired = 7,
+    Unknown = 40,
 }

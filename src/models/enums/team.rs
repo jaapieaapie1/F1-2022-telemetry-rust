@@ -45,4 +45,5 @@ pub enum Team {
     BWT21 = 115,
     Trident21 = 116,
     MercedesAMGGT = 117,
+    Unknown = 255,
 }
