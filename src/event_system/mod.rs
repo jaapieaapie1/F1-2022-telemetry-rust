@@ -24,11 +24,11 @@ macro_rules! signal {
         #[derive(Copy,Clone)]
         pub struct $rectype {
             id: usize,
-            sig: fn(&$data)
+            sig: &'static dyn Fn(&$data)
         }
 
         impl $rectype {
-            fn new(id: usize, cls: fn(&$data)) -> Self {
+            fn new(id: usize, cls: &'static dyn Fn(&$data)) -> Self {
                 Self {
                     id, sig: cls
                 }
@@ -51,7 +51,7 @@ macro_rules! signal {
 
         impl Receiver for $rectype {
             type Data = $data;
-            type Transformer = fn(&$data);
+            type Transformer = &'static dyn Fn(&$data);
 
             fn on_emit(self, data: &Self::Data) {
                 (self.sig)(data)
@@ -91,7 +91,7 @@ macro_rules! signal_fns {
             }
         }
 
-        fn listen(callable: fn(&Self)) {
+        fn listen(callable: &'static dyn Fn(&Self)) {
             unsafe {
                 SIGNAL.connect(callable);
             }

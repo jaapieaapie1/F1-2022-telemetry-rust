@@ -12,5 +12,5 @@ pub trait Packet {
 
     fn emit(self);
 
-    fn listen(callable: fn(&Self));
+    fn listen(callable: &'static dyn Fn(&Self));
 }
