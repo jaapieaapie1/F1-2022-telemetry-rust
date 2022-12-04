@@ -27,7 +27,7 @@ impl Server {
     }
 
     pub fn read_packet(&self) -> io::Result<Packets> {
-        let mut buf: [u8; PacketHeader::PACKET_SIZE] = [0; PacketHeader::PACKET_SIZE];
+        let mut buf: [u8; Self::calculate_size(PacketHeader::PACKET_SIZE)] = [0; Self::calculate_size(PacketHeader::PACKET_SIZE)];
         self.stream.peek(&mut buf)?;
 
         let header = PacketHeader::new(&mut ByteBuffer::from_bytes(&buf))?;
@@ -87,10 +87,17 @@ impl Server {
     }
 
     fn read_packet_dynamically<P: Packet>(&self) -> io::Result<P> {
-        let mut buf: Vec<u8> = vec![0; P::get_packet_size()];
+        let mut buf: Vec<u8> = vec![0; Self::calculate_size(P::get_packet_size())];
         self.stream.recv(&mut buf)?;
 
         P::new(&mut ByteBuffer::from_bytes(&buf))
+    }
+
+    pub const fn calculate_size(size: usize) -> usize {
+        if cfg!(windows) {
+            return size + 2048
+        }
+        size
     }
 }
 
